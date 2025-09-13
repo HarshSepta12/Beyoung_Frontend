@@ -3,3 +3,9 @@
     padding: 0;
     box-sizing: border-box;
 }
+body{
+    background-color: #e7e7e7 !important;
+}
+p{
+    font-family:sans-serif;
+}
