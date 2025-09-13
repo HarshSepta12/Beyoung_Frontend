@@ -1,11 +1,15 @@
 /* Main Login Button */
 .LoginRegisterContainer {
-  width: 100%;
-  background-color: #000000 !important;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 25rem !important;
+    width: 100%;
+    background-color: #000000 !important;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 25rem !important;
+    position: fixed;
+    top: 0px;
+    z-index: 10001;
+  
 }
 .LoginRegisterContainer p{
      color: white;

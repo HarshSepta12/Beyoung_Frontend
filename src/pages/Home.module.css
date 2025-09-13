@@ -5,6 +5,7 @@
   max-width: 1200px;
   margin: auto;
   overflow: hidden;
+  margin-top: 2.5rem;
 }
 .img {
   width: 100%;
@@ -58,13 +59,13 @@
   margin: 20px 0;
 }
 .comboScroll {
-      width: 86vw;
-    margin: auto;
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    scrollbar-width: none;
+  width: 86vw;
+  margin: auto;
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
   display: flex;
   gap: 15px;
   overflow-x: auto;
@@ -78,18 +79,16 @@
 /* Combo cards */
 .comboCard {
   flex-shrink: 0;
-  max-width: 220px;   /* ✅ max-width fix kiya */
-  min-width: 180px;   /* ✅ responsive ke liye */
+  max-width: 220px; /* ✅ max-width fix kiya */
+  min-width: 180px; /* ✅ responsive ke liye */
 }
 
 .cardImg {
   width: 100%;
   height: auto;
   border-radius: 8px;
-  object-fit: cover;  /* ✅ image stretch hone se bachegi */
+  object-fit: cover; /* ✅ image stretch hone se bachegi */
 }
-
-
 
 .scrollBtnLeft,
 .scrollBtnRight {
