@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "./Home.module.css";
+import ProductCard from "../components/ProductCard/ProductCard";
+import { getAllProducts, categories } from "../Services/productsService";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("view all");
+  const [selectedCategory, setSelectedCategory] = useState("View All");
   const progressRef = useRef();
+  const products = getAllProducts();
+  const comboScrollRef = useRef(null);
+  const collegeScrollRef = useRef(null);
+  const reviewScrollRef = useRef(null);
 
   const images = [
     "/poster-1.jpg",
@@ -48,6 +55,26 @@ const Home = () => {
     { img: "/poster7.7.png" },
     { img: "/poster7.8.png" },
   ];
+
+  useEffect(() => {
+    setProgress(0);
+    progressRef.current = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 100) return prev + 100 / (duration / 50);
+        clearInterval(progressRef.current);
+        return 100;
+      });
+    }, 50);
+
+    const timer = setTimeout(() => {
+      setCurrent((prev) => (prev + 1) % images.length);
+    }, duration);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(progressRef.current);
+    };
+  }, [current]);
 
   const duration = 3000; // 3 seconds
 
@@ -119,133 +146,6 @@ const Home = () => {
     );
   };
 
-  // Dummy product data
-  // Dummy product data
-  const products = [
-    {
-      id: 1,
-      imgsrc: "/newArrival1.1.jpg",
-      name: "Classic White Shirt",
-      category: "shirt",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 2,
-      imgsrc: "/newArrival1.2.jpg",
-      name: "Casual Gurkha Pant",
-      category: "gurkha pant",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 3,
-      imgsrc: "/newArrival1.3.jpg",
-      name: "Round Neck T-Shirt",
-      category: "t-shirt",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 4,
-      imgsrc: "/newArrival1.4.jpg",
-      name: "Black Polo T-Shirt",
-      category: "polo t-shirt",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 5,
-      imgsrc: "/newArrival1.5.jpg",
-      name: "Slim Fit Jeans",
-      category: "jeans",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 6,
-      imgsrc: "/newArrival1.6.jpg",
-      name: "Cargo Trouser Olive",
-      category: "cargo trouser",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 7,
-      imgsrc: "/newArrival1.7.jpg",
-      name: "Formal Blue Shirt",
-      category: "shirt",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 8,
-      imgsrc: "/newArrival1.8.jpg",
-      name: "Gurkha Pant Black",
-      category: "gurkha pant",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 9,
-      imgsrc: "/newArrival1.9.jpg",
-      name: "Graphic T-Shirt",
-      category: "t-shirt",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 10,
-      imgsrc: "/newArrival1.10.jpg",
-      name: "Striped Polo T-Shirt",
-      category: "polo t-shirt",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 11,
-      imgsrc: "/newArrival1.11.jpg",
-      name: "Distressed Jeans",
-      category: "jeans",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-    {
-      id: 12,
-      imgsrc: "/newArrival1.12.jpg",
-      name: "Cargo Trouser Khaki",
-      category: "cargo trouser",
-      currentPrice: 997,
-      originalPrice: 2499,
-      discount: 60,
-    },
-  ];
-
-  const categories = [
-    "View All",
-    "Shirt",
-    "Gurkha Pant",
-    "T-Shirt",
-    "Polo T-Shirt",
-    "Jeans",
-    "Cargo Trouser",
-  ];
-
-  // ✅ Refs inside component
-  const comboScrollRef = useRef(null);
-  const collegeScrollRef = useRef(null);
-
   useEffect(() => {
     setProgress(0);
     progressRef.current = setInterval(() => {
@@ -280,9 +180,12 @@ const Home = () => {
   };
 
   const filteredProducts =
-    selectedCategory === "view all"
+    selectedCategory === "View All"
       ? products
-      : products.filter((p) => p.category === selectedCategory);
+      : products.filter(
+          (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
+        );
+
   return (
     <>
       {/* 🔹 Carousel */}
@@ -330,9 +233,16 @@ const Home = () => {
         </button>
         <div className={styles.comboScroll} ref={comboScrollRef}>
           {comboProducts.map((item, idx) => (
-            <div key={idx} className={styles.comboCard}>
+            <Link
+              key={idx}
+              to={{
+                pathname: "/productDetails",
+                state: { productId: item.id }, // send product id in state
+              }}
+              className={styles.comboCard}
+            >
               <img src={item.img} alt={item.title} className={styles.cardImg} />
-            </div>
+            </Link>
           ))}
         </div>
         <button
@@ -486,48 +396,34 @@ const Home = () => {
       </div>
 
       {/* new Arrivals section  */}
-      <div className={styles.headingCombo}>
-        <h3>NEW ARRIVALS</h3>
-        <h5>Get them before everyone else does</h5>
-      </div>
-
       <div className={styles.container}>
-        {/* Filter Buttons */}
+        {/* Heading */}
+        <div className={styles.headingCombo}>
+          <h3>NEW ARRIVALS</h3>
+          <h5>Get them before everyone else does</h5>
+        </div>
+
+        {/* Filter Bar */}
         <div className={styles.filterBar}>
           {categories.map((cat) => (
             <button
               key={cat}
+              onClick={() => setSelectedCategory(cat)}
               className={`${styles.filterBtn} ${
                 selectedCategory === cat ? styles.active : ""
               }`}
-              onClick={() => setSelectedCategory(cat)}
             >
               {cat}
             </button>
           ))}
         </div>
 
-        {/* Product Cards */}
-        
-     <div className={styles.cardGrid}>
-  {filteredProducts.map((product) => (
-    <div key={product.id} className={styles.card}>
-      <img src={product.imgsrc} alt="productImg" />
-      <div className={styles.cardContent}>
-        <p className={styles.name}>{product.name}</p>
-        <p className={styles.category}>{product.category}</p>
-        <div className={styles.price}>
-          <strong>₹{product.currentPrice}</strong>
-          <span style={{ textDecoration: "line-through", color: "#888" }}>
-            ₹{product.originalPrice}
-          </span>
-          <span style={{ color: "green" }}> ({product.discount}% off)</span>
+        {/* Products Grid */}
+        <div className={styles.cardGrid}>
+          {filteredProducts.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
         </div>
-      </div>
-    </div>
-  ))}
-</div>
-
       </div>
     </>
   );

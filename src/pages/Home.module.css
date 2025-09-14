@@ -1,6 +1,6 @@
 /* Carousel */
 .carousel {
-  width: 100vw;
+  width: 98.5vw;
   max-width: 100vw;
   margin: auto;
   overflow: hidden;
@@ -10,7 +10,7 @@
   width: 100%;
   cursor: pointer;
   transition: box-shadow 0.3s;
-  border-radius: 8px;
+  /* border-radius: 8px; */
 }
 .dots {
   position: absolute;
@@ -350,7 +350,7 @@
 
 .cardGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* auto-fill instead of auto-fit */
   gap: 20px;
   margin-top: 20px;
 }

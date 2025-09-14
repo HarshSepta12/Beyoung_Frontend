@@ -1,19 +1,18 @@
 /* Main Login Button */
 .LoginRegisterContainer {
-    width: 100%;
-    background-color: #000000 !important;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 25rem !important;
-    position: fixed;
-    top: 0px;
-    z-index: 10001;
-  
+  width: 100%;
+  background-color: #000000 !important;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 25rem !important;
+  position: fixed;
+  top: 0px;
+  z-index: 10001;
 }
-.LoginRegisterContainer p{
-     color: white;
-     margin: 0 !important;
+.LoginRegisterContainer p {
+  color: white;
+  margin: 0 !important;
 }
 .loginButton {
   background-color: transparent;
@@ -27,7 +26,6 @@
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: inherit;
 }
 
 /* Modal Overlay */
@@ -139,7 +137,6 @@
   border: none;
   border-bottom: 3px solid transparent;
   transition: all 0.3s ease;
-  font-family: inherit;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -178,7 +175,7 @@
   outline: none;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  font-family: inherit;
+
   background-color: #fafafa;
 }
 
@@ -232,7 +229,6 @@
   outline: none;
   font-size: 14px;
   background: transparent;
-  font-family: inherit;
 }
 
 .phoneInput::placeholder {
@@ -253,7 +249,7 @@
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: inherit;
+
   margin-bottom: 15px;
 }
 
@@ -276,7 +272,6 @@
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: inherit;
 }
 
 .otpButton:hover {
@@ -348,7 +343,7 @@
   font-size: 14px;
   font-weight: 500;
   transition: all 0.3s ease;
-  font-family: inherit;
+
   color: #333;
   display: flex;
   align-items: center;
@@ -406,16 +401,15 @@
   }
 }
 
-
 @media (max-width: 600px) {
   .LoginRegisterContainer {
     /* flex-direction: column; */
     gap: 3rem !important;
     padding: 8px 0;
   }
-.LoginRegisterContainer p{
-  font-size: 12px;
-}
+  .LoginRegisterContainer p {
+    font-size: 12px;
+  }
   .loginButton {
     font-size: 12px;
     width: 100%;
@@ -429,15 +423,19 @@
     max-width: 99vw;
     max-height: 99vh;
     margin: 0;
-    border-radius: 16px 16px 0 0;  /* Modern bottom sheet look */
-    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    border-radius: 16px 16px 0 0; /* Modern bottom sheet look */
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
     padding: 0;
     animation: modalSlideUp 0.3s ease-out;
   }
 
   @keyframes modalSlideUp {
-    from { transform: translateY(100vh); }
-    to { transform: translateY(0); }
+    from {
+      transform: translateY(100vh);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
 
   .modalContent {
@@ -449,7 +447,9 @@
     margin-bottom: 2px;
   }
 
-  .subtitle, .formGroup, .forgotPassword {
+  .subtitle,
+  .formGroup,
+  .forgotPassword {
     font-size: 14px;
   }
 

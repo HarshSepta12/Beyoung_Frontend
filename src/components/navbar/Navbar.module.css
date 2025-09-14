@@ -1,7 +1,7 @@
 /* Main Navbar */
 .navbar {
   width: 100%;
-  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  font-family: "Poppins", sans-serif;
   background: #fff;
   border-bottom: 1px solid #eee;
   position: fixed;
@@ -214,6 +214,7 @@
 
 .sidebar.sidebarOpen {
   transform: translateX(0);
+  z-index: 10002;
 }
 
 .sidebarContent {
@@ -227,13 +228,29 @@
 .sidebarItem {
   padding: 15px 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
+  gap: 10px;
   align-items: center;
   cursor: pointer;
   font-size: 16px;
   color: #333;
   transition: background-color 0.2s ease;
 }
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.sidebarImg {
+  width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  object-fit: contain;
+}
+
+
 
 .sidebarItem:hover {
   background-color: #f8f8f8;
@@ -295,7 +312,7 @@
 /* Search Overlay */
 .searchOverlay {
   position: fixed;
-  top: 0;
+  top: 78px;
   left: 0;
   width: 100%;
   height: 100vh;
@@ -411,11 +428,6 @@
 
   .sidebar {
     width: 260px;
-  }
-
-  .sidebarItem {
-    padding: 12px 15px;
-    font-size: 15px;
   }
 
   .sidebarSubmenuItem,
