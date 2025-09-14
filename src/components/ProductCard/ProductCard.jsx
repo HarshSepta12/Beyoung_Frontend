@@ -1,5 +1,6 @@
 import React from "react";
-import styles from "/src/Pages/Home.module.css"
+import styles from "../../pages/Home.module.css";
+
 
 const ProductCard = ({ product }) => {
   return (
