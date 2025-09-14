@@ -30,3 +30,22 @@ body {
     font-size: 14px;
   font-family: "Poppins", sans-serif;
 }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.appWrapper {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+}
+
+
+.mainContent {
+  flex: 1; 
+}

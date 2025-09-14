@@ -1,13 +1,16 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import { getAllProducts, categories } from "../Services/productsService.js";
 import ProductCard from "../components/ProductCard/ProductCard.jsx";
+import styles from "./Product.module.css";
 
 const Products = () => {
-  const [selectedCategory, setSelectedCategory] = useState("View All");
+  const { category } = useParams(); // ✅ URL se category param
+  const [selectedCategory, setSelectedCategory] = useState(
+    category ? category : "View All"
+  );
 
   const allProducts = getAllProducts();
-//   console.log("All Product",allProducts);
-  
 
   const filteredProducts =
     selectedCategory === "View All"
@@ -17,39 +20,36 @@ const Products = () => {
         );
 
   return (
-    <div>
-      {/* Category Filters */}
-      <div style={{ marginBottom: "20px", textAlign: "center" }}>
+    <div className={styles.productsPage}>
+      {/* 🔹 Heading */}
+      <h2 className={styles.pageTitle}>
+        {selectedCategory === "View All" ? "All Products" : selectedCategory}
+      </h2>
+
+      {/* 🔹 Category Filter */}
+      <div className={styles.categoryBar}>
         {categories.map((cat) => (
           <button
             key={cat}
+            className={`${styles.categoryBtn} ${
+              selectedCategory === cat ? styles.active : ""
+            }`}
             onClick={() => setSelectedCategory(cat)}
-            style={{
-              margin: "5px",
-              padding: "10px 15px",
-              cursor: "pointer",
-              border:
-                selectedCategory === cat ? "2px solid black" : "1px solid #ccc",
-              borderRadius: "5px",
-              backgroundColor: selectedCategory === cat ? "#f0f0f0" : "white",
-            }}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      {/* Product Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "20px",
-        }}
-      >
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+      {/* 🔹 Product Grid */}
+      <div className={styles.productGrid}>
+        {filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        ) : (
+          <p className={styles.noProducts}>No products found</p>
+        )}
       </div>
     </div>
   );

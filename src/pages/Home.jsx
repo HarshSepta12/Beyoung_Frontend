@@ -15,26 +15,26 @@ const Home = () => {
   const reviewScrollRef = useRef(null);
 
   const images = [
-    "/poster-1.jpg",
-    "/poster-2.jpg",
-    "/poster-3.jpg",
-    "/poster-4.jpg",
-    "/poster-5.jpg",
-    "/poster-6.jpg",
-    "/poster-7.jpg",
+    { category: "festival", img: "/poster-1.jpg" },
+    { category: "combos", img: "/poster-2.jpg" },
+    { category: "festival", img: "/poster-3.jpg" },
+    { category: "back to college", img: "/poster-4.jpg" },
+    { category: "korean pant", img: "/poster-5.jpg" },
+    { category: "payjama pant", img: "/poster-6.jpg" },
+    { category: "T-shirt", img: "/poster-7.jpg" },
   ];
 
   const comboProducts = [
-    { img: "/poster2.1.jpg" },
-    { img: "/poster2.2.jpg" },
-    { img: "/poster2.3.jpg" },
-    { img: "/poster2.4.jpg" },
-    { img: "/poster2.5.jpg" },
-    { img: "/poster2.6.jpg" },
-    { img: "/poster2.7.jpg" },
-    { img: "/poster2.8.jpg" },
-    { img: "/poster2.9.jpg" },
-    { img: "/poster2.10.jpg" },
+    { category: "polo", img: "/poster2.1.jpg" },
+    { category: "plain T-shirt", img: "/poster2.2.jpg" },
+    { category: "polo", img: "/poster2.3.jpg" },
+    { category: "plain shirt", img: "/poster2.4.jpg" },
+    { category: "payjama", img: "/poster2.5.jpg" },
+    { category: "full sleeves", img: "/poster2.6.jpg" },
+    { category: "cargo", img: "/poster2.7.jpg" },
+    { category: "boxer", img: "/poster2.8.jpg" },
+    { category: "shirt shirt", img: "/poster2.9.jpg" },
+    { category: "payjama", img: "/poster2.10.jpg" },
   ];
 
   const collegePhoto = [
@@ -190,11 +190,16 @@ const Home = () => {
     <>
       {/* 🔹 Carousel */}
       <div className={styles.carousel}>
-        <img
-          src={images[current]}
-          alt={`Poster ${current + 1}`}
-          className={styles.img}
-        />
+        <Link
+          to={`/products/${images[current].category}`}
+          state={{ category: images[current].category }}
+        >
+          <img
+            src={images[current].img}
+            alt={`Poster ${current + 1}`}
+            className={styles.img}
+          />
+        </Link>
         <div className={styles.dots}>
           {images.map((_, idx) => (
             <div
@@ -235,16 +240,15 @@ const Home = () => {
           {comboProducts.map((item, idx) => (
             <Link
               key={idx}
-              to={{
-                pathname: "/productDetails",
-                state: { productId: item.id }, // send product id in state
-              }}
+              to={`/products/${item.category}`}
+              state={{ category: item.category }}
               className={styles.comboCard}
             >
               <img src={item.img} alt={item.title} className={styles.cardImg} />
             </Link>
           ))}
         </div>
+
         <button
           className={styles.scrollBtnRight}
           onClick={() => scroll(comboScrollRef, "right")}
@@ -282,32 +286,44 @@ const Home = () => {
       </div>
 
       {/* 🔹 Back To College */}
-      <div className={styles.headingCombo}>
-        <h3>Back To College</h3>
-        <h5>Styles to Slay This Semester!</h5>
-      </div>
+     <div className={styles.headingCombo}>
+  <h3>Back To College</h3>
+  <h5>Styles to Slay This Semester!</h5>
+</div>
 
-      <div className={styles.comboScrollWrapper}>
-        <button
-          className={styles.scrollBtnLeft}
-          onClick={() => scroll(collegeScrollRef, "left")}
+<div className={styles.comboScrollWrapper}>
+  <button
+    className={styles.scrollBtnLeft}
+    onClick={() => scroll(collegeScrollRef, "left")}
+  >
+    &#8592;
+  </button>
+
+  <div className={styles.comboScroll} ref={collegeScrollRef}>
+    {collegePhoto.map((item, idx) => (
+      <div key={idx} className={styles.comboCard}>
+        <Link
+          to={`/products/Back%20To%20College`}   // ✅ fixed category in URL
+          state={{ category: "Back To College" }} // ✅ state bhi pass ho rahi
         >
-          &#8592;
-        </button>
-        <div className={styles.comboScroll} ref={collegeScrollRef}>
-          {collegePhoto.map((item, idx) => (
-            <div key={idx} className={styles.comboCard}>
-              <img src={item.img} alt={item.title} className={styles.cardImg} />
-            </div>
-          ))}
-        </div>
-        <button
-          className={styles.scrollBtnRight}
-          onClick={() => scroll(collegeScrollRef, "right")}
-        >
-          &#8594;
-        </button>
+          <img
+            src={item.img}
+            alt={item.title}
+            className={styles.cardImg}
+          />
+        </Link>
       </div>
+    ))}
+  </div>
+
+  <button
+    className={styles.scrollBtnRight}
+    onClick={() => scroll(collegeScrollRef, "right")}
+  >
+    &#8594;
+  </button>
+</div>
+
 
       {/* 🔹 Coupon Section */}
       <CouponScroll />
