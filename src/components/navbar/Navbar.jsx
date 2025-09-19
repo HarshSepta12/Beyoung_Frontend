@@ -94,7 +94,7 @@ const Navbar = () => {
           ><span></span><span></span><span></span></div>
           {/* Logo */}
           <div className={styles.navbarLogo}>
-            <a href="/"><img src="/Logo.png" alt="Logo" /></a>
+            <a href="/"><img src="/Logo.svg" alt="Logo" /></a>
           </div>
           {/* Desktop Menu */}
           <ul className={styles.navbarMenu}>

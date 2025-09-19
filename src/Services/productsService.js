@@ -1,4 +1,42 @@
 // productService.js
+const url = "http://localhost:1200/api/product";
+
+export const getProducts = async () => {
+  const response = await fetch(`${url}/getProduct`);
+  
+  if (!response.ok) {
+    throw new Error("Failed to fetch products");
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+// In your postProduct function, log the error response:
+
+export const postProduct = async (product) => {
+  try {
+    const response = await fetch(`${url}/addProduct`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json(); // Get error details
+      console.error("Backend error:", errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error posting product:", error);
+    throw error;
+  }
+};
 
 const products = [
   {

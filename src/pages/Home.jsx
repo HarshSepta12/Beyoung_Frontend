@@ -45,6 +45,20 @@ const Home = () => {
     { img: "/poster5.5.jpg" },
     { img: "/poster5.6.jpg" },
   ];
+
+  const mostWantedCategory = [
+    { category: "polo", img: "/poster4.1.jpg" },
+    { category: "polo", img: "/poster4.2.jpg" },
+    { category: "polo", img: "/poster4.3.jpg" },
+    { category: "polo", img: "/poster4.4.jpg" },
+    { category: "polo", img: "/poster4.5.jpg" },
+    { category: "polo", img: "/poster4.6.jpg" },
+    { category: "polo", img: "/poster4.7.jpg" },
+    { category: "polo", img: "/poster4.8.jpg" },
+    { category: "polo", img: "/poster4.9.jpg" },
+    { category: "polo", img: "/poster4.10.jpg" },
+  ];
+
   const ClientReview = [
     { img: "/poster7.1.png" },
     { img: "/poster7.2.png" },
@@ -284,46 +298,69 @@ const Home = () => {
       <div className={styles.mostwantedCategory}>
         <h2>Most Wanted Categories</h2>
       </div>
+      <div className="d-flex justify-content-center gap-5 align-items-center flex-wrap margin-auto">
+        {mostWantedCategory.map((item, index) => (
+          <Link
+            key={index}
+            to={`/products/${item.category}`}
+            state={{ category: item.category }}
+            className={styles.comboCard}
+          >
+            <div>
+              <img
+                src={item.img}
+                alt="category Image"
+                style={{
+                  width: "240px",
+                  height: "320px",
+                  margin: "10px",
+                  borderRadius: "9px",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
+          </Link>
+        ))}
+      </div>
 
       {/* 🔹 Back To College */}
-     <div className={styles.headingCombo}>
-  <h3>Back To College</h3>
-  <h5>Styles to Slay This Semester!</h5>
-</div>
-
-<div className={styles.comboScrollWrapper}>
-  <button
-    className={styles.scrollBtnLeft}
-    onClick={() => scroll(collegeScrollRef, "left")}
-  >
-    &#8592;
-  </button>
-
-  <div className={styles.comboScroll} ref={collegeScrollRef}>
-    {collegePhoto.map((item, idx) => (
-      <div key={idx} className={styles.comboCard}>
-        <Link
-          to={`/products/Back%20To%20College`}   // ✅ fixed category in URL
-          state={{ category: "Back To College" }} // ✅ state bhi pass ho rahi
-        >
-          <img
-            src={item.img}
-            alt={item.title}
-            className={styles.cardImg}
-          />
-        </Link>
+      <div className={styles.headingCombo}>
+        <h3>Back To College</h3>
+        <h5>Styles to Slay This Semester!</h5>
       </div>
-    ))}
-  </div>
 
-  <button
-    className={styles.scrollBtnRight}
-    onClick={() => scroll(collegeScrollRef, "right")}
-  >
-    &#8594;
-  </button>
-</div>
+      <div className={styles.comboScrollWrapper}>
+        <button
+          className={styles.scrollBtnLeft}
+          onClick={() => scroll(collegeScrollRef, "left")}
+        >
+          &#8592;
+        </button>
 
+        <div className={styles.comboScroll} ref={collegeScrollRef}>
+          {collegePhoto.map((item, idx) => (
+            <div key={idx} className={styles.comboCard}>
+              <Link
+                to={`/products/Back%20To%20College`} // ✅ fixed category in URL
+                state={{ category: "Back To College" }} // ✅ state bhi pass ho rahi
+              >
+                <img
+                  src={item.img}
+                  alt={item.title}
+                  className={styles.cardImg}
+                />
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        <button
+          className={styles.scrollBtnRight}
+          onClick={() => scroll(collegeScrollRef, "right")}
+        >
+          &#8594;
+        </button>
+      </div>
 
       {/* 🔹 Coupon Section */}
       <CouponScroll />
@@ -361,11 +398,11 @@ const Home = () => {
       <div className={styles.comboScrollWrapper}>
         <button
           className={styles.scrollBtnLeft}
-          onClick={() => scroll(collegeScrollRef, "left")}
+          onClick={() => scroll(reviewScrollRef, "left")}
         >
           &#8592;
         </button>
-        <div className={styles.comboScroll} ref={collegeScrollRef}>
+        <div className={styles.comboScroll} ref={reviewScrollRef}>
           {ClientReview.map((item, idx) => (
             <div key={idx} className={styles.comboCard}>
               <img src={item.img} alt={item.title} className={styles.cardImg} />
@@ -374,7 +411,7 @@ const Home = () => {
         </div>
         <button
           className={styles.scrollBtnRight}
-          onClick={() => scroll(collegeScrollRef, "right")}
+          onClick={() => scroll(reviewScrollRef, "right")}
         >
           &#8594;
         </button>

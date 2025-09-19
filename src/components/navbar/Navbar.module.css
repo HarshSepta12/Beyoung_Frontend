@@ -394,10 +394,12 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+  
   }
 
   .navbarLogo img {
     height: 142px;
+  
   }
 
   /* Hide desktop menu on mobile */
