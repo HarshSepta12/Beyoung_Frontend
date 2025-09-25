@@ -1,87 +1,521 @@
+/* BeYoung Inspired ProductCard Theme */
+
 .card {
-  width: 250px;
+  background: white;
   border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  border: 1px solid #e0e0e0;
 }
 
 .card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: #ffcc00;
+}
+
+.wishlistBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  color: #666666;
+}
+
+.wishlistBtn:hover {
+  background: white;
+  transform: scale(1.1);
+  color: #ff6b00;
+}
+
+.wishlistBtn.active {
+  background: #ff6b00;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.3);
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hoverImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .hoverImage {
+  opacity: 1;
+}
+
+.card:hover .productImage {
+  transform: scale(1.05);
 }
 
 .cardContent {
-  padding: 12px;
+  padding: 16px;
 }
 
 .name {
   font-size: 16px;
   font-weight: 600;
-  margin: 5px 0;
-  color: #222;
+  color: #000000;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .category {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 8px;
+  font-size: 12px;
+  color: #666666;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  background: rgba(255, 204, 0, 0.1);
+  color: #000000;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 204, 0, 0.3);
+}
+
+.moreTagsIndicator {
+  background: rgba(255, 107, 0, 0.1);
+  color: #000000;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 107, 0, 0.3);
 }
 
 .priceSection {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
 }
 
 .discountPrice {
-  font-size: 16px;
-  font-weight: bold;
-  color: #e53935;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff6b00;
 }
 
 .originalPrice {
   font-size: 14px;
-  color: #888;
+  color: #666666;
   text-decoration: line-through;
 }
 
 .discount {
-  font-size: 13px;
-  color: #388e3c;
+  background: #ffcc00;
+  color: #000000;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.card:hover .actionButtons {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.quickViewBtn, .addToCartBtn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.quickViewBtn {
+  background: #f5f5f5;
+  color: #000000;
+  border: 1px solid #e0e0e0;
+}
+
+.quickViewBtn:hover {
+  background: #ffcc00;
+  color: #000000;
+  border-color: #ffcc00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.3);
+}
+
+.addToCartBtn {
+  background: linear-gradient(135deg, #ffcc00 0%, #ff6b00 100%);
+  color: #000000;
+  font-weight: 700;
+}
+
+.addToCartBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 204, 0, 0.4);
+}
+
+.debugInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 107, 0, 0.9);
+  color: white;
+  padding: 4px;
+  font-size: 10px;
+  text-align: center;
   font-weight: 600;
 }
 
-.imageWrapper {
-  width: 100%;
-  height: 300px;
-  overflow: hidden;
-  position: relative;
-}
-
-.productImage {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* 👈 cover ki jagah contain ya fill use karo */
+/* BeYoung style enhancements */
+.newBadge {
   position: absolute;
-  top: 0;
-  left: 0;
-  transition: opacity 0.3s ease-in-out;
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(135deg, #ffcc00 0%, #ff6b00 100%);
+  color: #000000;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  z-index: 5;
 }
 
-/* First image by default visible */
-.productImage:first-child {
-  opacity: 1;
-  z-index: 1;
+.saleBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #ff6b00;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  z-index: 5;
+  animation: pulse 2s infinite;
 }
 
-/* Hover par dusri image upar aa jaye */
-.imageWrapper:hover .productImage:first-child {
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.stars {
+  display: flex;
+  gap: 1px;
+  font-size: 12px;
+  color: #ffcc00;
+}
+
+.ratingText {
+  font-size: 11px;
+  color: #666666;
+  margin-left: 4px;
+}
+
+.sizeOptions {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.sizeOption {
+  padding: 2px 6px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #666666;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sizeOption:hover,
+.sizeOption.active {
+  border-color: #ffcc00;
+  background: #ffcc00;
+  color: #000000;
+}
+
+.colorOptions {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.colorOption {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.colorOption:hover,
+.colorOption.active {
+  border-color: #ffcc00;
+  transform: scale(1.1);
+}
+
+.quickActions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 8px;
   opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.imageWrapper:hover .productImage:last-child {
+.card:hover .quickActions {
   opacity: 1;
+}
+
+.quickAction {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quickAction:hover {
+  background: #ffcc00;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card {
+    max-width: 160px;
+  }
+  
+  .imageContainer {
+    height: 140px;
+  }
+  
+  .cardContent {
+    padding: 12px;
+  }
+  
+  .name {
+    font-size: 14px;
+  }
+  
+  .discountPrice {
+    font-size: 16px;
+  }
+  
+  .actionButtons {
+    opacity: 1;
+    transform: translateY(0);
+    flex-direction: column;
+  }
+  
+  .quickViewBtn, .addToCartBtn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .wishlistBtn {
+    width: 28px;
+    height: 28px;
+    top: 8px;
+    right: 8px;
+  }
+  
+  .quickActions {
+    opacity: 1;
+    position: static;
+    transform: none;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  
+  .quickAction {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+}
+
+/* Loading state */
+.card.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.card.loading .productImage {
+  animation: shimmer 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Out of stock state */
+.card.outOfStock {
+  opacity: 0.6;
+}
+
+.card.outOfStock::after {
+  content: 'OUT OF STOCK';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  z-index: 10;
+}
+
+/* Special BeYoung animations */
+.card.featured {
+  position: relative;
+  overflow: visible;
+}
+
+.card.featured::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #ffcc00, #ff6b00, #ffcc00);
+  border-radius: 14px;
+  z-index: -1;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background: linear-gradient(45deg, #ffcc00, #ff6b00, #ffcc00);
+  }
+  50% {
+    background: linear-gradient(45deg, #ff6b00, #ffcc00, #ff6b00);
+  }
+}
+
+.card.bestSeller::after {
+  content: 'BESTSELLER';
+  position: absolute;
+  top: -5px;
+  left: 15px;
+  background: #ff6b00;
+  color: white;
+  padding: 4px 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  border-radius: 0 0 8px 8px;
+  clip-path: polygon(0 0, 100% 0, 90% 100%, 10% 100%);
 }

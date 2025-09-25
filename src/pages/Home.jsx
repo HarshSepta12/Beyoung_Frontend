@@ -1,142 +1,215 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import styles from "./Home.module.css";
-import ProductCard from "../components/ProductCard/ProductCard";
-import { getAllProducts, categories } from "../Services/productsService";
-import { Link } from "react-router-dom";
+import ProductCard from "../components/ProductCard/ProductCard.jsx";
+import { ProductContext } from "../Context/ProductContext.jsx";
+import { PosterContext } from "../Context/PosterContext.jsx";
+import { SectionContext } from "../Context/SectionContext.jsx";
+import { Link, useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
+  
+  const {
+    products,
+    category: categories,
+    loading: productsLoading,
+  } = useContext(ProductContext);
+
+  const { poster: posters, loading: postersLoading } =
+    useContext(PosterContext);
+  const {
+    sections,
+    loading: sectionsLoading,
+    error: sectionsError,
+  } = useContext(SectionContext);
+
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("View All");
+
   const progressRef = useRef();
-  const products = getAllProducts();
-  const comboScrollRef = useRef(null);
-  const collegeScrollRef = useRef(null);
+  const sectionRefs = useRef({});
   const reviewScrollRef = useRef(null);
 
-  const images = [
-    { category: "festival", img: "/poster-1.jpg" },
-    { category: "combos", img: "/poster-2.jpg" },
-    { category: "festival", img: "/poster-3.jpg" },
-    { category: "back to college", img: "/poster-4.jpg" },
-    { category: "korean pant", img: "/poster-5.jpg" },
-    { category: "payjama pant", img: "/poster-6.jpg" },
-    { category: "T-shirt", img: "/poster-7.jpg" },
-  ];
-
-  const comboProducts = [
-    { category: "polo", img: "/poster2.1.jpg" },
-    { category: "plain T-shirt", img: "/poster2.2.jpg" },
-    { category: "polo", img: "/poster2.3.jpg" },
-    { category: "plain shirt", img: "/poster2.4.jpg" },
-    { category: "payjama", img: "/poster2.5.jpg" },
-    { category: "full sleeves", img: "/poster2.6.jpg" },
-    { category: "cargo", img: "/poster2.7.jpg" },
-    { category: "boxer", img: "/poster2.8.jpg" },
-    { category: "shirt shirt", img: "/poster2.9.jpg" },
-    { category: "payjama", img: "/poster2.10.jpg" },
-  ];
-
-  const collegePhoto = [
-    { img: "/poster5.1.jpg" },
-    { img: "/poster5.2.jpg" },
-    { img: "/poster5.3.jpg" },
-    { img: "/poster5.4.jpg" },
-    { img: "/poster5.5.jpg" },
-    { img: "/poster5.6.jpg" },
-  ];
-
-  const mostWantedCategory = [
-    { category: "polo", img: "/poster4.1.jpg" },
-    { category: "polo", img: "/poster4.2.jpg" },
-    { category: "polo", img: "/poster4.3.jpg" },
-    { category: "polo", img: "/poster4.4.jpg" },
-    { category: "polo", img: "/poster4.5.jpg" },
-    { category: "polo", img: "/poster4.6.jpg" },
-    { category: "polo", img: "/poster4.7.jpg" },
-    { category: "polo", img: "/poster4.8.jpg" },
-    { category: "polo", img: "/poster4.9.jpg" },
-    { category: "polo", img: "/poster4.10.jpg" },
-  ];
-
-  const ClientReview = [
-    { img: "/poster7.1.png" },
-    { img: "/poster7.2.png" },
-    { img: "/poster7.3.png" },
-    { img: "/poster7.4.png" },
-    { img: "/poster7.5.png" },
-    { img: "/poster7.6.png" },
-    { img: "/poster7.7.png" },
-    { img: "/poster7.8.png" },
-  ];
-
+  // Create refs for scrollable sections
   useEffect(() => {
+    sections.forEach((s) => {
+      if (
+        s.componentType === "scrollable" &&
+        !sectionRefs.current[s.identifier]
+      ) {
+        sectionRefs.current[s.identifier] = React.createRef();
+      }
+    });
+
+  }, [sections]);
+
+  // Helper function to parse tags from section tags array - FIXED VERSION
+  const parseTagsFromSection = (tags) => {
+    if (!Array.isArray(tags)) return [];
+      
+    let parsedTags = [];
+    tags.forEach(tag => {
+      if (typeof tag === 'string') {
+        // Check if it's a comma-separated string with quotes
+        if (tag.includes(',') || tag.includes('"')) {
+          // Clean and split the string
+          const cleanTag = tag.replace(/"/g, '').trim();
+          const splitTags = cleanTag.split(',').map(t => t.trim()).filter(t => t.length > 0);
+          parsedTags.push(...splitTags);
+        } else {
+          parsedTags.push(tag.trim());
+        }
+      }
+    });
+    
+    // Remove duplicates and clean
+    parsedTags = [...new Set(parsedTags.filter(tag => tag && tag.length > 0))];
+//console.log('🏷️ Parsed tags from section:', parsedTags);
+    return parsedTags;
+  };
+
+  // Updated function to get filtered posters
+  const getFilteredPosters = (tag) => {
+  //  console.log(`Looking for posters with tag: "${tag}"`);
+    const filtered = posters.filter((p) => {
+      const isActive = p.isActive;
+      // Clean tag comparison - remove quotes and extra spaces
+      const cleanPosterTag = p.tag?.replace(/"/g, '').trim().toLowerCase();
+      const cleanSearchTag = tag?.replace(/"/g, '').trim().toLowerCase();
+      const tagMatch = cleanPosterTag === cleanSearchTag;
+//console.log(`Poster "${p.title}": tag="${p.tag}" (cleaned: "${cleanPosterTag}"), isActive=${isActive}, matches "${tag}" (cleaned: "${cleanSearchTag}"): ${tagMatch}`);
+      return tagMatch && isActive;
+    });
+   // console.log(`Found ${filtered.length} posters for tag "${tag}"`);
+    return filtered;
+  };
+
+  const getPostersForTags = (tags, sectionIdentifier) => {
+  //  console.log(`Getting posters for section: ${sectionIdentifier}`);
+    const parsedTags = parseTagsFromSection(tags);
+  //  console.log('Getting posters for parsed tags:', parsedTags);
+    
+    // Get all posters that match any of the parsed tags
+    const allMatchingPosters = [];
+    parsedTags.forEach(tag => {
+      const matchingPosters = getFilteredPosters(tag);
+      allMatchingPosters.push(...matchingPosters);
+    });
+    
+    // Remove duplicates
+    const uniquePosters = allMatchingPosters.filter((poster, index, array) => 
+      array.findIndex(p => p._id === poster._id) === index
+    );
+    
+   // console.log(`Total unique posters found: ${uniquePosters.length}`);
+    return uniquePosters;
+  };
+
+  // Updated sections processing with better logging
+  const activeSectionsWithPosters = sections
+    .filter((s) => {
+//console.log(`Processing section: "${s.name}" (${s.identifier}), isActive: ${s.isActive}`);
+      return s.isActive;
+    })
+    .map((s) => {
+      const sectionPosters = getPostersForTags(s.tags, s.identifier);
+    //  console.log(`Section "${s.name}" (${s.identifier}) has ${sectionPosters.length} posters`);
+      
+      return { 
+        ...s, 
+        posters: sectionPosters,
+        // For category section, use the parsed tags as category buttons
+        parsedTags: parseTagsFromSection(s.tags)
+      };
+    })
+    .filter((s) => {
+      const hasPosters = s.posters.length > 0;
+    //  console.log(`Section "${s.name}" ${hasPosters ? 'WILL BE SHOWN' : 'WILL BE HIDDEN'} (${s.posters.length} posters)`);
+      return hasPosters;
+    });
+
+ // console.log('🎉 Final active sections with posters:', activeSectionsWithPosters);
+
+  const carouselImages =
+    activeSectionsWithPosters.find((s) => s.componentType === "carousel")
+      ?.posters || [];
+
+  // Function to handle poster click navigation
+  const handlePosterClick = (poster, isGridType = false, selectedTag = null) => {
+   // console.log('🖱️ Poster click:', poster.title, 'Grid type:', isGridType, 'Selected tag:', selectedTag);
+    
+    if (isGridType && selectedTag) {
+      // Use the selected tag from grid
+      const tagParam = selectedTag.replace(/\s+/g, "-");
+      navigate(`/products/${tagParam}`);
+    } else if (poster.tag) {
+      // For other types, convert tag to URL-friendly format
+      const tagParam = poster.tag.replace(/\s+/g, "-");
+      navigate(`/products/${tagParam}`);
+    } else if (poster.redirectUrl) {
+      // Fallback to redirectUrl if available
+      if (poster.redirectUrl.startsWith('/')) {
+        navigate(poster.redirectUrl);
+      } else {
+        window.open(poster.redirectUrl, '_blank');
+      }
+    } else {
+      // If no tag or redirectUrl, navigate to all products
+      navigate(`/products`);
+    }
+  };
+
+  // Auto carousel progress
+  useEffect(() => {
+    if (!carouselImages.length) return;
+
     setProgress(0);
     progressRef.current = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 100) return prev + 100 / (duration / 50);
-        clearInterval(progressRef.current);
-        return 100;
-      });
+      setProgress((prev) => (prev < 100 ? prev + 100 / (3000 / 50) : 100));
     }, 50);
 
-    const timer = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, duration);
+    const timer = setTimeout(
+      () => setCurrent((prev) => (prev + 1) % carouselImages.length),
+      3000
+    );
 
     return () => {
-      clearTimeout(timer);
       clearInterval(progressRef.current);
+      clearTimeout(timer);
     };
-  }, [current]);
+  }, [current, carouselImages.length]);
 
-  const duration = 3000; // 3 seconds
-
-  const coupons = [
-    { img: "/poster6.1.png" },
-    { img: "/poster6.2.png" },
-    { img: "/poster6.3.jpg" },
-    { img: "/poster6.4.png" },
-    { img: "/poster6.5.png" },
-    { img: "/poster6.6.png" },
-    { img: "/poster6.7.png" },
-    { img: "/poster6.8.png" },
-    { img: "/poster6.9.png" },
-  ];
-
-  // ✅ CouponScroll Component
   const CouponScroll = () => {
     const scrollRef = useRef(null);
+    const coupons = [...Array(9)].map((_, i) => ({
+      img: `/poster6.${i + 1}${i === 2 ? ".jpg" : ".png"}`,
+    }));
 
     useEffect(() => {
-      const scrollContainer = scrollRef.current;
+      const container = scrollRef.current;
+      if (!container) return;
       let isHovered = false;
 
-      const handleMouseEnter = () => (isHovered = true);
-      const handleMouseLeave = () => (isHovered = false);
+      const enter = () => (isHovered = true);
+      const leave = () => (isHovered = false);
+      container.addEventListener("mouseenter", enter);
+      container.addEventListener("mouseleave", leave);
 
-      scrollContainer.addEventListener("mouseenter", handleMouseEnter);
-      scrollContainer.addEventListener("mouseleave", handleMouseLeave);
-
-      const autoScroll = () => {
-        if (!isHovered && scrollContainer) {
-          if (
-            scrollContainer.scrollLeft + scrollContainer.clientWidth >=
-            scrollContainer.scrollWidth
-          ) {
-            scrollContainer.scrollLeft = 0;
-          } else {
-            scrollContainer.scrollLeft += 1;
-          }
+      const timer = setInterval(() => {
+        if (!isHovered) {
+          container.scrollLeft =
+            container.scrollLeft + 1 >=
+            container.scrollWidth - container.clientWidth
+              ? 0
+              : container.scrollLeft + 1;
         }
-      };
-
-      const timer = setInterval(autoScroll, 20);
+      }, 20);
 
       return () => {
         clearInterval(timer);
-        scrollContainer.removeEventListener("mouseenter", handleMouseEnter);
-        scrollContainer.removeEventListener("mouseleave", handleMouseLeave);
+        container.removeEventListener("mouseenter", enter);
+        container.removeEventListener("mouseleave", leave);
       };
     }, []);
 
@@ -147,11 +220,11 @@ const Home = () => {
           <span>SAVE NOW</span>
         </div>
         <div className={styles.couponBar} ref={scrollRef}>
-          {coupons.map((coupon, idx) => (
+          {coupons.map((c, i) => (
             <img
-              key={idx}
-              src={coupon.img}
-              alt={`Coupon ${idx + 1}`}
+              key={i}
+              src={c.img}
+              alt={`Coupon ${i}`}
               className={styles.couponImg}
             />
           ))}
@@ -160,241 +233,230 @@ const Home = () => {
     );
   };
 
-  useEffect(() => {
-    setProgress(0);
-    progressRef.current = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 100) return prev + 100 / (duration / 50);
-        clearInterval(progressRef.current);
-        return 100;
-      });
-    }, 50);
+  const scroll = (ref, dir) => {
+    const width = window.innerWidth < 700 ? 170 : 250;
+    ref?.current?.scrollBy({
+      left: dir === "left" ? -width : width,
+      behavior: "smooth",
+    });
+  };
 
-    const timer = setTimeout(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, duration);
+  const filteredProducts = Array.isArray(products)
+    ? selectedCategory === "View All"
+      ? products
+      : products.filter((p) => {
+          const name =
+            typeof p.category === "string" ? p.category : p.category?.name;
+          return name?.toLowerCase() === selectedCategory.toLowerCase();
+        })
+    : [];
 
-    return () => {
-      clearTimeout(timer);
-      clearInterval(progressRef.current);
-    };
-  }, [current]);
+  const renderSection = (section) => {
+    const { componentType, posters, title, subtitle, identifier, parsedTags } = section;
 
-  const goToImage = (idx) => setCurrent(idx);
+    switch (componentType) {
+      case "carousel":
+        return (
+          <div className={styles.carousel}>
+            <img
+              src={posters[current]?.image}
+              alt={posters[current]?.title || title}
+              className={styles.img}
+              onClick={() => handlePosterClick(posters[current])}
+              style={{ cursor: 'pointer' }}
+            />
+            <div className={styles.dots}>
+              {posters.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={styles.progressDot}
+                  onClick={() => setCurrent(idx)}
+                >
+                  <div
+                    className={styles.progressFill}
+                    style={{
+                      width:
+                        idx === current
+                          ? `${progress}%`
+                          : idx < current
+                          ? "100%"
+                          : "0%",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
 
-  // ✅ Single scroll function
-  const scroll = (ref, direction) => {
-    const cardWidth = window.innerWidth < 700 ? 170 : 250;
-    if (ref.current) {
-      ref.current.scrollBy({
-        left: direction === "left" ? -cardWidth : cardWidth,
-        behavior: "smooth",
-      });
+      case "scrollable":
+        return (
+          <>
+            <div className={styles.headingCombo}>
+              <h3>{title}</h3>
+              {subtitle && <h5>{subtitle}</h5>}
+            </div>
+            <div className={styles.comboScrollWrapper}>
+              <button
+                className={styles.scrollBtnLeft}
+                onClick={() => scroll(sectionRefs.current[identifier], "left")}
+              >
+                &#8592;
+              </button>
+              <div
+                className={styles.comboScroll}
+                ref={sectionRefs.current[identifier]}
+              >
+                {posters.map((p, i) => (
+                  <div
+                    key={`${identifier}-${i}`}
+                    className={styles.comboCard}
+                    onClick={() => handlePosterClick(p)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img
+                      src={p.image}
+                      alt={p.title || title}
+                      className={styles.cardImg}
+                    />
+                  </div>
+                ))}
+              </div>
+              <button
+                className={styles.scrollBtnRight}
+                onClick={() => scroll(sectionRefs.current[identifier], "right")}
+              >
+                &#8594;
+              </button>
+            </div>
+          </>
+        );
+
+      case "grid":
+        return (
+          <>
+            <div className={styles.mostwantedCategory}>
+              <h2>{title}</h2>
+              {subtitle && <h5>{subtitle}</h5>}
+            </div>
+            <div className="d-flex justify-content-center gap-5 align-items-center flex-wrap margin-auto">
+              {posters.map((p, i) => (
+                <div key={i} className={styles.gridContainer}>
+                  <div
+                    className={styles.comboCard}
+                    onClick={() => handlePosterClick(p, true, parsedTags?.[0])}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img
+                      src={p.image}
+                      alt={p.title || title}
+                      style={{
+                        width: "240px",
+                        height: "320px",
+                        borderRadius: "9px",
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        );
+
+      case "banner":
+        return (
+          <div className={styles.bannerSection}>
+            {title && (
+              <div className={styles.headingCombo}>
+                <h3>{title}</h3>
+                {subtitle && <h5>{subtitle}</h5>}
+              </div>
+            )}
+            <div className="d-flex justify-content-center gap-3 flex-wrap">
+              {posters.map((p, i) => (
+                <div
+                  key={i}
+                  onClick={() => handlePosterClick(p)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <img
+                    src={p.image}
+                    alt={p.title || title}
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto",
+                      borderRadius: "8px",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
-  const filteredProducts =
-    selectedCategory === "View All"
-      ? products
-      : products.filter(
-          (p) => p.category.toLowerCase() === selectedCategory.toLowerCase()
-        );
+  if (productsLoading || postersLoading || sectionsLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "50vh",
+          fontSize: "18px",
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* 🔹 Carousel */}
-      <div className={styles.carousel}>
-        <Link
-          to={`/products/${images[current].category}`}
-          state={{ category: images[current].category }}
-        >
-          <img
-            src={images[current].img}
-            alt={`Poster ${current + 1}`}
-            className={styles.img}
-          />
-        </Link>
-        <div className={styles.dots}>
-          {images.map((_, idx) => (
-            <div
-              key={idx}
-              className={styles.progressDot}
-              onClick={() => goToImage(idx)}
-            >
-              <div
-                className={styles.progressFill}
-                style={{
-                  width:
-                    idx === current
-                      ? `${progress}%`
-                      : idx < current
-                      ? `100%`
-                      : `0%`,
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
 
-      {/* 🔹 Super Saving Combos */}
-      <div className={styles.headingCombo}>
-        <h3>SUPER SAVING COMBOS</h3>
-        <h5>Loved by 4+ millions</h5>
-      </div>
+    
 
-      <div className={styles.comboScrollWrapper}>
-        <button
-          className={styles.scrollBtnLeft}
-          onClick={() => scroll(comboScrollRef, "left")}
-        >
-          &#8592;
-        </button>
-        <div className={styles.comboScroll} ref={comboScrollRef}>
-          {comboProducts.map((item, idx) => (
-            <Link
-              key={idx}
-              to={`/products/${item.category}`}
-              state={{ category: item.category }}
-              className={styles.comboCard}
-            >
-              <img src={item.img} alt={item.title} className={styles.cardImg} />
-            </Link>
-          ))}
-        </div>
+      {activeSectionsWithPosters.map((s) => (
+        <div key={s._id || s.identifier}>{renderSection(s)}</div>
+      ))}
 
-        <button
-          className={styles.scrollBtnRight}
-          onClick={() => scroll(comboScrollRef, "right")}
-        >
-          &#8594;
-        </button>
-      </div>
-
-      {/* 🔹 Info Posters */}
       <div className="d-flex justify-content-center">
         <p>NO COST | 3 EASY EMIs – Activate at Checkout</p>
       </div>
 
       <div className="d-flex justify-content-evenly gap-5 align-items-center flex-wrap w mt-5 mb-5 w-100">
-        <img
-          src="/poster3.1.jpg"
-          alt="international"
-          style={{ width: "260px", height: "200px" }}
-        />
-        <img
-          src="/poster3.2.jpg"
-          alt="global fashion"
-          style={{ width: "260px", height: "200px" }}
-        />
-        <img
-          src="/poster3.3.jpg"
-          alt="easy return"
-          style={{ width: "260px", height: "200px" }}
-        />
-      </div>
-
-      {/* 🔹 Most Wanted */}
-      <div className={styles.mostwantedCategory}>
-        <h2>Most Wanted Categories</h2>
-      </div>
-      <div className="d-flex justify-content-center gap-5 align-items-center flex-wrap margin-auto">
-        {mostWantedCategory.map((item, index) => (
-          <Link
-            key={index}
-            to={`/products/${item.category}`}
-            state={{ category: item.category }}
-            className={styles.comboCard}
-          >
-            <div>
-              <img
-                src={item.img}
-                alt="category Image"
-                style={{
-                  width: "240px",
-                  height: "320px",
-                  margin: "10px",
-                  borderRadius: "9px",
-                  cursor: "pointer",
-                }}
-              />
-            </div>
-          </Link>
+        {[1, 2, 3].map((i) => (
+          <img
+            key={i}
+            src={`/poster3.${i}.jpg`}
+            alt=""
+            style={{ width: 260, height: 200 }}
+          />
         ))}
       </div>
 
-      {/* 🔹 Back To College */}
-      <div className={styles.headingCombo}>
-        <h3>Back To College</h3>
-        <h5>Styles to Slay This Semester!</h5>
-      </div>
+      <CouponScroll />
 
-      <div className={styles.comboScrollWrapper}>
-        <button
-          className={styles.scrollBtnLeft}
-          onClick={() => scroll(collegeScrollRef, "left")}
-        >
-          &#8592;
-        </button>
-
-        <div className={styles.comboScroll} ref={collegeScrollRef}>
-          {collegePhoto.map((item, idx) => (
-            <div key={idx} className={styles.comboCard}>
-              <Link
-                to={`/products/Back%20To%20College`} // ✅ fixed category in URL
-                state={{ category: "Back To College" }} // ✅ state bhi pass ho rahi
-              >
-                <img
-                  src={item.img}
-                  alt={item.title}
-                  className={styles.cardImg}
-                />
-              </Link>
+      {/* Scrolling Text */}
+      <div className={styles.scrollingtextcontainer}>
+        <div className={styles.scrollingsection}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className={styles.scrollingtext}>
+              Making <span>Global Fashion </span> Accessible
             </div>
           ))}
         </div>
-
-        <button
-          className={styles.scrollBtnRight}
-          onClick={() => scroll(collegeScrollRef, "right")}
-        >
-          &#8594;
-        </button>
       </div>
 
-      {/* 🔹 Coupon Section */}
-      <CouponScroll />
-
-      {/* markQ section #ffd302 */}
-      <div className={styles.scrollingtextcontainer}>
-        <div className={styles.scrollingsection}>
-          <div className={styles.scrollingtext}>
-            Making <span>Global Fashion </span> Accessible
-          </div>
-          <div className={styles.scrollingtext}>
-            Making <span>Global Fashion </span> Accessible
-          </div>
-          <div className={styles.scrollingtext}>
-            Making <span>Global Fashion </span> Accessible
-          </div>
-          <div className={styles.scrollingtext}>
-            Making <span>Global Fashion </span> Accessible
-          </div>
-          <div className={styles.scrollingtext}>
-            Making <span>Global Fashion </span> Accessible
-          </div>
-          <div className={styles.scrollingtext}>
-            Making <span>Global Fashion </span> Accessible
-          </div>
-        </div>
-      </div>
-
-      {/* Review Section */}
+      {/* Reviews */}
       <div className={styles.headingCombo}>
         <h3>KAIROZIAN APPROVED</h3>
         <h5>Real reviews from real people</h5>
       </div>
-
       <div className={styles.comboScrollWrapper}>
         <button
           className={styles.scrollBtnLeft}
@@ -403,9 +465,13 @@ const Home = () => {
           &#8592;
         </button>
         <div className={styles.comboScroll} ref={reviewScrollRef}>
-          {ClientReview.map((item, idx) => (
-            <div key={idx} className={styles.comboCard}>
-              <img src={item.img} alt={item.title} className={styles.cardImg} />
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className={styles.comboCard}>
+              <img
+                src={`/poster7.${i + 1}.png`}
+                alt=""
+                className={styles.cardImg}
+              />
             </div>
           ))}
         </div>
@@ -417,65 +483,60 @@ const Home = () => {
         </button>
       </div>
 
-      {/* featured section  */}
+      {/* Featured */}
       <div className={`${styles.scrollingtextcontainer} ${styles.featured}`}>
         <h1>FEATURED</h1>
         <div className={styles.scrollingsection}>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.1.png" alt="post1" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.2.png" alt="post2" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.3.png" alt="post3" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.4.png" alt="post4" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.5.png" alt="post5" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.6.png" alt="post6" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.7.png" alt="post7" />
-          </div>
-          <div className={styles.scrollingtext}>
-            <img src="/poster8.8.png" alt="post8" />
-          </div>
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className={styles.scrollingtext}>
+              <img src={`/poster8.${i + 1}.png`} alt="" />
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* new Arrivals section  */}
+      {/* New Arrivals */}
       <div className={styles.container}>
-        {/* Heading */}
         <div className={styles.headingCombo}>
           <h3>NEW ARRIVALS</h3>
           <h5>Get them before everyone else does</h5>
         </div>
-
-        {/* Filter Bar */}
         <div className={styles.filterBar}>
-          {categories.map((cat) => (
+          <button
+            onClick={() => setSelectedCategory("View All")}
+            className={`${styles.filterBtn} ${
+              selectedCategory === "View All" ? styles.active : ""
+            }`}
+          >
+            View All
+          </button>
+          {categories.map((c) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              key={c._id}
+              onClick={() => setSelectedCategory(c.name)}
               className={`${styles.filterBtn} ${
-                selectedCategory === cat ? styles.active : ""
+                selectedCategory === c.name ? styles.active : ""
               }`}
             >
-              {cat}
+              {c.name}
             </button>
           ))}
         </div>
-
-        {/* Products Grid */}
         <div className={styles.cardGrid}>
-          {filteredProducts.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((p) => <ProductCard key={p._id} product={p} />)
+          ) : (
+            <div
+              style={{
+                textAlign: "center",
+                width: "100%",
+                padding: 20,
+                color: "#666",
+              }}
+            >
+              No products found for "{selectedCategory}"
+            </div>
+          )}
         </div>
       </div>
     </>
