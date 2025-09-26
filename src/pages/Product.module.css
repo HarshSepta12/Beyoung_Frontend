@@ -504,3 +504,50 @@
   outline: 2px solid #ffcc00;
   outline-offset: 2px;
 }
+
+
+/* Filter bar container */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+/* Filter buttons */
+.filterBtn {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.filterBtn:hover {
+  background-color: #f0f0f0;
+}
+
+.filterBtn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Product Grid */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+  gap: 20px;
+}
+
+/* No products found */
+.noProducts {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+  font-size: 16px;
+}

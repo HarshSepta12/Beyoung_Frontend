@@ -4,24 +4,14 @@ import ProductCard from "../components/ProductCard/ProductCard.jsx";
 import { ProductContext } from "../Context/ProductContext.jsx";
 import { PosterContext } from "../Context/PosterContext.jsx";
 import { SectionContext } from "../Context/SectionContext.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
-  
-  const {
-    products,
-    category: categories,
-    loading: productsLoading,
-  } = useContext(ProductContext);
 
-  const { poster: posters, loading: postersLoading } =
-    useContext(PosterContext);
-  const {
-    sections,
-    loading: sectionsLoading,
-    error: sectionsError,
-  } = useContext(SectionContext);
+  const { products, category: categories, loading: productsLoading } = useContext(ProductContext);
+  const { poster: posters, loading: postersLoading, error: postersError, fetchPoster } = useContext(PosterContext);
+  const { sections, loading: sectionsLoading, error: sectionsError, fetchSections } = useContext(SectionContext);
 
   const [current, setCurrent] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -31,29 +21,29 @@ const Home = () => {
   const sectionRefs = useRef({});
   const reviewScrollRef = useRef(null);
 
+  useEffect(() => {
+    // console.log("products", products);
+    // console.log("posters", posters);
+    // console.log("sections", sections);
+  }, [products, posters, sections]);
+
   // Create refs for scrollable sections
   useEffect(() => {
     sections.forEach((s) => {
-      if (
-        s.componentType === "scrollable" &&
-        !sectionRefs.current[s.identifier]
-      ) {
+      if (s.componentType === "scrollable" && !sectionRefs.current[s.identifier]) {
         sectionRefs.current[s.identifier] = React.createRef();
       }
     });
-
   }, [sections]);
 
-  // Helper function to parse tags from section tags array - FIXED VERSION
+  // Parse tags helper
   const parseTagsFromSection = (tags) => {
     if (!Array.isArray(tags)) return [];
-      
+
     let parsedTags = [];
     tags.forEach(tag => {
       if (typeof tag === 'string') {
-        // Check if it's a comma-separated string with quotes
         if (tag.includes(',') || tag.includes('"')) {
-          // Clean and split the string
           const cleanTag = tag.replace(/"/g, '').trim();
           const splitTags = cleanTag.split(',').map(t => t.trim()).filter(t => t.length > 0);
           parsedTags.push(...splitTags);
@@ -62,117 +52,90 @@ const Home = () => {
         }
       }
     });
-    
-    // Remove duplicates and clean
-    parsedTags = [...new Set(parsedTags.filter(tag => tag && tag.length > 0))];
-//console.log('🏷️ Parsed tags from section:', parsedTags);
-    return parsedTags;
+
+    return [...new Set(parsedTags.filter(tag => tag && tag.length > 0))];
   };
 
-  // Updated function to get filtered posters
+  // Get filtered posters by tag
   const getFilteredPosters = (tag) => {
-  //  console.log(`Looking for posters with tag: "${tag}"`);
-    const filtered = posters.filter((p) => {
+    const filtered = posters.filter(p => {
       const isActive = p.isActive;
-      // Clean tag comparison - remove quotes and extra spaces
       const cleanPosterTag = p.tag?.replace(/"/g, '').trim().toLowerCase();
       const cleanSearchTag = tag?.replace(/"/g, '').trim().toLowerCase();
-      const tagMatch = cleanPosterTag === cleanSearchTag;
-//console.log(`Poster "${p.title}": tag="${p.tag}" (cleaned: "${cleanPosterTag}"), isActive=${isActive}, matches "${tag}" (cleaned: "${cleanSearchTag}"): ${tagMatch}`);
-      return tagMatch && isActive;
+      return isActive && cleanPosterTag === cleanSearchTag;
     });
-   // console.log(`Found ${filtered.length} posters for tag "${tag}"`);
     return filtered;
   };
 
+  // Get posters matching any tags
   const getPostersForTags = (tags, sectionIdentifier) => {
-  //  console.log(`Getting posters for section: ${sectionIdentifier}`);
     const parsedTags = parseTagsFromSection(tags);
-  //  console.log('Getting posters for parsed tags:', parsedTags);
-    
-    // Get all posters that match any of the parsed tags
     const allMatchingPosters = [];
     parsedTags.forEach(tag => {
       const matchingPosters = getFilteredPosters(tag);
       allMatchingPosters.push(...matchingPosters);
     });
-    
-    // Remove duplicates
     const uniquePosters = allMatchingPosters.filter((poster, index, array) => 
       array.findIndex(p => p._id === poster._id) === index
     );
-    
-   // console.log(`Total unique posters found: ${uniquePosters.length}`);
     return uniquePosters;
   };
 
-  // Updated sections processing with better logging
   const activeSectionsWithPosters = sections
-    .filter((s) => {
-//console.log(`Processing section: "${s.name}" (${s.identifier}), isActive: ${s.isActive}`);
-      return s.isActive;
-    })
-    .map((s) => {
+    .filter(s => s.isActive)
+    .map(s => {
       const sectionPosters = getPostersForTags(s.tags, s.identifier);
-    //  console.log(`Section "${s.name}" (${s.identifier}) has ${sectionPosters.length} posters`);
-      
-      return { 
-        ...s, 
+      return {
+        ...s,
         posters: sectionPosters,
-        // For category section, use the parsed tags as category buttons
-        parsedTags: parseTagsFromSection(s.tags)
+        parsedTags: parseTagsFromSection(s.tags),
       };
     })
-    .filter((s) => {
-      const hasPosters = s.posters.length > 0;
-    //  console.log(`Section "${s.name}" ${hasPosters ? 'WILL BE SHOWN' : 'WILL BE HIDDEN'} (${s.posters.length} posters)`);
-      return hasPosters;
-    });
+    .filter(s => s.posters.length > 0);
 
- // console.log('🎉 Final active sections with posters:', activeSectionsWithPosters);
+  const carouselImages = activeSectionsWithPosters.find(s => s.componentType === "carousel")?.posters || [];
 
-  const carouselImages =
-    activeSectionsWithPosters.find((s) => s.componentType === "carousel")
-      ?.posters || [];
+  // Handle poster click with correct categoryType and tagSlug
+const handlePosterClick = (poster, isGridType = false, selectedTag = null) => {
+  console.log("poster",poster);
+  
+  let tagSlug = selectedTag || poster.tag || "";
+  tagSlug = tagSlug.replace(/\s+/g, "-").toLowerCase();
 
-  // Function to handle poster click navigation
-  const handlePosterClick = (poster, isGridType = false, selectedTag = null) => {
-   // console.log('🖱️ Poster click:', poster.title, 'Grid type:', isGridType, 'Selected tag:', selectedTag);
-    
-    if (isGridType && selectedTag) {
-      // Use the selected tag from grid
-      const tagParam = selectedTag.replace(/\s+/g, "-");
-      navigate(`/products/${tagParam}`);
-    } else if (poster.tag) {
-      // For other types, convert tag to URL-friendly format
-      const tagParam = poster.tag.replace(/\s+/g, "-");
-      navigate(`/products/${tagParam}`);
+  if (tagSlug) {
+    // Navigate to the new route for tag-based filtering
+    navigate(`/products/tag/${tagSlug}`);
+  } else {
+    // Existing logic for category-based or redirect URL navigation
+    const productWithTag = products.find(p =>
+      p.tags && p.tags.some(t => t.toLowerCase() === tagSlug.toLowerCase())
+    );
+    const categoryType = productWithTag?.category?.categoryType || "general";
+
+    if (tagSlug) {
+      navigate(`/products/${categoryType}/${tagSlug}`);
     } else if (poster.redirectUrl) {
-      // Fallback to redirectUrl if available
-      if (poster.redirectUrl.startsWith('/')) {
+      if (poster.redirectUrl.startsWith("/")) {
         navigate(poster.redirectUrl);
       } else {
-        window.open(poster.redirectUrl, '_blank');
+        window.open(poster.redirectUrl, "_blank");
       }
     } else {
-      // If no tag or redirectUrl, navigate to all products
-      navigate(`/products`);
+      navigate("/products");
     }
-  };
+  }
+};
 
-  // Auto carousel progress
+  // Carousel progress effect
   useEffect(() => {
     if (!carouselImages.length) return;
 
     setProgress(0);
     progressRef.current = setInterval(() => {
-      setProgress((prev) => (prev < 100 ? prev + 100 / (3000 / 50) : 100));
+      setProgress(prev => (prev < 100 ? prev + 100 / (3000 / 50) : 100));
     }, 50);
 
-    const timer = setTimeout(
-      () => setCurrent((prev) => (prev + 1) % carouselImages.length),
-      3000
-    );
+    const timer = setTimeout(() => setCurrent(prev => (prev + 1) % carouselImages.length), 3000);
 
     return () => {
       clearInterval(progressRef.current);
@@ -183,7 +146,7 @@ const Home = () => {
   const CouponScroll = () => {
     const scrollRef = useRef(null);
     const coupons = [...Array(9)].map((_, i) => ({
-      img: `/poster6.${i + 1}${i === 2 ? ".jpg" : ".png"}`,
+      img: `/poster6.${i + 1}${i === 2 ? ".jpg" : ".png"}`
     }));
 
     useEffect(() => {
@@ -198,11 +161,7 @@ const Home = () => {
 
       const timer = setInterval(() => {
         if (!isHovered) {
-          container.scrollLeft =
-            container.scrollLeft + 1 >=
-            container.scrollWidth - container.clientWidth
-              ? 0
-              : container.scrollLeft + 1;
+          container.scrollLeft = container.scrollLeft + 1 >= container.scrollWidth - container.clientWidth ? 0 : container.scrollLeft + 1;
         }
       }, 20);
 
@@ -221,12 +180,7 @@ const Home = () => {
         </div>
         <div className={styles.couponBar} ref={scrollRef}>
           {coupons.map((c, i) => (
-            <img
-              key={i}
-              src={c.img}
-              alt={`Coupon ${i}`}
-              className={styles.couponImg}
-            />
+            <img key={i} src={c.img} alt={`Coupon ${i}`} className={styles.couponImg} />
           ))}
         </div>
       </div>
@@ -244,16 +198,16 @@ const Home = () => {
   const filteredProducts = Array.isArray(products)
     ? selectedCategory === "View All"
       ? products
-      : products.filter((p) => {
-          const name =
-            typeof p.category === "string" ? p.category : p.category?.name;
+      : products.filter(p => {
+          const name = typeof p.category === "string" ? p.category : p.category?.name;
           return name?.toLowerCase() === selectedCategory.toLowerCase();
         })
     : [];
 
-  const renderSection = (section) => {
+  const renderSection = section => {
     const { componentType, posters, title, subtitle, identifier, parsedTags } = section;
-
+    // console.log("POSTER", posters);
+    
     switch (componentType) {
       case "carousel":
         return (
@@ -344,7 +298,7 @@ const Home = () => {
                 <div key={i} className={styles.gridContainer}>
                   <div
                     className={styles.comboCard}
-                    onClick={() => handlePosterClick(p, true, parsedTags?.[0])}
+                    onClick={() => handlePosterClick(p, true)}
                     style={{ cursor: 'pointer' }}
                   >
                     <img
@@ -398,18 +352,11 @@ const Home = () => {
         return null;
     }
   };
+  
 
   if (productsLoading || postersLoading || sectionsLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "50vh",
-          fontSize: "18px",
-        }}
-      >
+      <div style={{display: "flex", justifyContent: "center", alignItems: "center", height: "50vh", fontSize: "18px"}}>
         Loading...
       </div>
     );
@@ -417,10 +364,7 @@ const Home = () => {
 
   return (
     <>
-
-    
-
-      {activeSectionsWithPosters.map((s) => (
+      {activeSectionsWithPosters.map(s => (
         <div key={s._id || s.identifier}>{renderSection(s)}</div>
       ))}
 
@@ -429,19 +373,13 @@ const Home = () => {
       </div>
 
       <div className="d-flex justify-content-evenly gap-5 align-items-center flex-wrap w mt-5 mb-5 w-100">
-        {[1, 2, 3].map((i) => (
-          <img
-            key={i}
-            src={`/poster3.${i}.jpg`}
-            alt=""
-            style={{ width: 260, height: 200 }}
-          />
+        {[1, 2, 3].map(i => (
+          <img key={i} src={`/poster3.${i}.jpg`} alt="" style={{ width: 260, height: 200 }} />
         ))}
       </div>
 
       <CouponScroll />
 
-      {/* Scrolling Text */}
       <div className={styles.scrollingtextcontainer}>
         <div className={styles.scrollingsection}>
           {[...Array(6)].map((_, i) => (
@@ -452,38 +390,23 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Reviews */}
       <div className={styles.headingCombo}>
         <h3>KAIROZIAN APPROVED</h3>
         <h5>Real reviews from real people</h5>
       </div>
+      
       <div className={styles.comboScrollWrapper}>
-        <button
-          className={styles.scrollBtnLeft}
-          onClick={() => scroll(reviewScrollRef, "left")}
-        >
-          &#8592;
-        </button>
+        <button className={styles.scrollBtnLeft} onClick={() => scroll(reviewScrollRef, "left")}>&#8592;</button>
         <div className={styles.comboScroll} ref={reviewScrollRef}>
           {[...Array(8)].map((_, i) => (
             <div key={i} className={styles.comboCard}>
-              <img
-                src={`/poster7.${i + 1}.png`}
-                alt=""
-                className={styles.cardImg}
-              />
+              <img src={`/poster7.${i + 1}.png`} alt="" className={styles.cardImg} />
             </div>
           ))}
         </div>
-        <button
-          className={styles.scrollBtnRight}
-          onClick={() => scroll(reviewScrollRef, "right")}
-        >
-          &#8594;
-        </button>
+        <button className={styles.scrollBtnRight} onClick={() => scroll(reviewScrollRef, "right")}>&#8594;</button>
       </div>
 
-      {/* Featured */}
       <div className={`${styles.scrollingtextcontainer} ${styles.featured}`}>
         <h1>FEATURED</h1>
         <div className={styles.scrollingsection}>
@@ -495,7 +418,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* New Arrivals */}
       <div className={styles.container}>
         <div className={styles.headingCombo}>
           <h3>NEW ARRIVALS</h3>
@@ -504,9 +426,7 @@ const Home = () => {
         <div className={styles.filterBar}>
           <button
             onClick={() => setSelectedCategory("View All")}
-            className={`${styles.filterBtn} ${
-              selectedCategory === "View All" ? styles.active : ""
-            }`}
+            className={`${styles.filterBtn} ${selectedCategory === "View All" ? styles.active : ""}`}
           >
             View All
           </button>
@@ -514,9 +434,7 @@ const Home = () => {
             <button
               key={c._id}
               onClick={() => setSelectedCategory(c.name)}
-              className={`${styles.filterBtn} ${
-                selectedCategory === c.name ? styles.active : ""
-              }`}
+              className={`${styles.filterBtn} ${selectedCategory === c.name ? styles.active : ""}`}
             >
               {c.name}
             </button>
@@ -526,14 +444,7 @@ const Home = () => {
           {filteredProducts.length > 0 ? (
             filteredProducts.map((p) => <ProductCard key={p._id} product={p} />)
           ) : (
-            <div
-              style={{
-                textAlign: "center",
-                width: "100%",
-                padding: 20,
-                color: "#666",
-              }}
-            >
+            <div style={{ textAlign: "center", width: "100%", padding: 20, color: "#666" }}>
               No products found for "{selectedCategory}"
             </div>
           )}

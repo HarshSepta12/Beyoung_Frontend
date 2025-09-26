@@ -4,7 +4,7 @@ import { IoSearchOutline } from "react-icons/io5";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { IoCartOutline } from "react-icons/io5";
 import { ProductContext } from "../../Context/ProductContext";
-import useNavigate  from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,16 +13,14 @@ const Navbar = () => {
   const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
 
-  // IMPORTING CONTEXT DATA
   const { products, category } = useContext(ProductContext);
-  useEffect(() => {
-    console.log("Product Form Context", products);
 
+  useEffect(() => {
     const checkIsMobile = () => setIsMobile(window.innerWidth <= 768);
     checkIsMobile();
     window.addEventListener("resize", checkIsMobile);
     return () => window.removeEventListener("resize", checkIsMobile);
-  }, [products, category]);
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "unset";
@@ -53,16 +51,11 @@ const Navbar = () => {
           "Plain T-shirts",
           "Printed T-shirts",
           "Oversized T-shirts",
-          "View all",
+          "View All",
         ],
-        Shirts: [
-          "Plain shirts",
-          "Printed shirts",
-          "Striped shirts",
-          "View all",
-        ],
-        Polos: ["View all"],
-        "Shop For Women": ["Topwear", "Bottomwear", "View all"],
+        Shirts: ["Plain shirts", "Printed shirts", "Striped shirts", "View All"],
+        Polos: ["View All"],
+        "Shop For Women": ["Topwear", "Bottomwear", "View All"],
       },
     },
     {
@@ -70,13 +63,13 @@ const Navbar = () => {
       subMenu: [
         "Cargo Joggers",
         "Cargo Pants",
-        "Trousers",
+        "Trouser",
         "Korean Pants",
         "Pyjamas",
         "Jeans",
         "Jorts",
         "Boxers",
-        "View all",
+        "View All",
       ],
     },
     { title: "Winterwear" },
@@ -107,7 +100,6 @@ const Navbar = () => {
     "Combos",
   ];
 
-  // The correct order for desktop navbar (matches your screenshot)
   const desktopOrder = [
     "Topwear",
     "Bottomwear",
@@ -116,11 +108,35 @@ const Navbar = () => {
     "Festive Fashion Sale",
   ];
 
+  const slugify = (str) => str?.toLowerCase().trim().replace(/\s+/g, "-");
+
+  // 🔥 Updated: handleCategoryClick with View All case
+  const handleCategoryClick = (link, parentCategory = null) => {
+    let targetCategory = link;
+
+    // Agar View All hai to parentCategory ka use karo
+    if (link.toLowerCase() === "view all" && parentCategory) {
+      targetCategory = parentCategory;
+    }
+
+    const catObj = category.find(
+      (c) =>
+        c.name.toLowerCase() === targetCategory.toLowerCase() ||
+        c.slug.toLowerCase() === targetCategory.toLowerCase()
+    );
+
+    if (catObj) {
+      navigate(`/products/${catObj.categoryType}/${slugify(catObj.name)}`);
+    } else {
+      navigate(`/products/general/${slugify(targetCategory)}`); // fallback
+    }
+    closeMobileMenu();
+  };
+
   return (
     <>
       <nav className={styles.navbar}>
         <div className={styles.navbarContainer}>
-          {/* Hamburger button for mobile */}
           <div
             className={`${styles.hamburger} ${isOpen ? styles.active : ""}`}
             onClick={toggleMobileMenu}
@@ -130,13 +146,13 @@ const Navbar = () => {
             <span></span>
             <span></span>
           </div>
-          {/* Logo */}
+
           <div className={styles.navbarLogo}>
             <a href="/">
               <img src="/Logo.svg" alt="Logo" />
             </a>
           </div>
-          {/* Desktop Menu */}
+
           <ul className={styles.navbarMenu}>
             {desktopOrder.map((title) => {
               const index = sidebarMenuItems.findIndex(
@@ -171,27 +187,36 @@ const Navbar = () => {
                         {Array.isArray(item.subMenu) ? (
                           <div className={styles.dropdownColumn}>
                             {item.subMenu.map((link, i) => (
-                              <a key={i} href="/">
+                              <a
+                                key={i}
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleCategoryClick(link, item.title); // ✅ parentCategory pass
+                                }}
+                              >
                                 {link}
                               </a>
                             ))}
                           </div>
                         ) : (
-                          Object.entries(item.subMenu).map(
-                            ([heading, links]) => (
-                              <div
-                                key={heading}
-                                className={styles.dropdownColumn}
-                              >
-                                <h4>{heading}</h4>
-                                {links.map((link, i) => (
-                                  <a key={i} href="/">
-                                    {link}
-                                  </a>
-                                ))}
-                              </div>
-                            )
-                          )
+                          Object.entries(item.subMenu).map(([heading, links]) => (
+                            <div key={heading} className={styles.dropdownColumn}>
+                              <h4>{heading}</h4>
+                              {links.map((link, i) => (
+                                <a
+                                  key={i}
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleCategoryClick(link, item.title); // ✅ parentCategory pass
+                                  }}
+                                >
+                                  {link}
+                                </a>
+                              ))}
+                            </div>
+                          ))
                         )}
                       </div>
                     </div>
@@ -200,7 +225,7 @@ const Navbar = () => {
               );
             })}
           </ul>
-          {/* Desktop icons */}
+
           <div className={styles.navbarIcons}>
             <button
               className={styles.icon}
@@ -219,11 +244,11 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-      {/* Sidebar overlay */}
+
       {isOpen && (
         <div className={styles.overlay} onClick={closeMobileMenu}></div>
       )}
-      {/* Sidebar (mobile): images always shown, full sequence */}
+
       <div className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
         <div className={styles.sidebarContent}>
           {sidebarMenuItems.map((item, index) => (
@@ -259,7 +284,14 @@ const Navbar = () => {
                   {Array.isArray(item.subMenu)
                     ? item.subMenu.map((link, i) => (
                         <div key={i} className={styles.sidebarSubmenuItem}>
-                          <a href="/" onClick={closeMobileMenu}>
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleCategoryClick(link, item.title); // ✅ parentCategory pass
+                              closeMobileMenu();
+                            }}
+                          >
                             {link}
                           </a>
                         </div>
@@ -271,7 +303,15 @@ const Navbar = () => {
                         >
                           <h4>{heading}</h4>
                           {links.map((link, i) => (
-                            <a key={i} href="/" onClick={closeMobileMenu}>
+                            <a
+                              key={i}
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleCategoryClick(link, item.title); // ✅ parentCategory pass
+                                closeMobileMenu();
+                              }}
+                            >
                               {link}
                             </a>
                           ))}
@@ -283,33 +323,6 @@ const Navbar = () => {
           ))}
         </div>
       </div>
-      {/* Search overlay */}
-      {showSearch && (
-        <div className={styles.searchOverlay}>
-          <div className={styles.searchBox}>
-            <IoSearchOutline
-              style={{ marginRight: "10px", color: "#ff5722" }}
-            />
-            <input type="text" placeholder="Search for products..." />
-            <button
-              className={styles.closeBtn}
-              onClick={() => setShowSearch(false)}
-            >
-              ✖
-            </button>
-          </div>
-          <div className={styles.trending}>
-            <h4>TRENDING SEARCHES ON Kairoz</h4>
-            <ul>
-              {trendingSearches.map((item, i) => (
-                <li key={i} onClick={() => setShowSearch(false)}>
-                  <IoSearchOutline /> {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
     </>
   );
 };
